@@ -92,8 +92,8 @@ xcodebuild test -scheme SwiftUIToolLab -destination 'platform=macOS'
 
 ## Roadmap
 
-- [ ] Phase 0 — Folder structure and empty files with `// MARK: - TODO`
-- [ ] Phase 1 — Core/Workspace, models, and protocols (compiles)
+- [X] Phase 0 — Folder structure and empty files with `// MARK: - TODO`
+- [X] Phase 1 — Core/Workspace, models, and protocols (compiles)
 - [ ] Phase 2 — ServiceLocator, dependency injection, one minimal feature (compiles and renders)
 - [ ] Phase 3 — Full Base64 implementation with passing tests
 - [ ] Phase 4 — Full Crypto implementation with passing tests
