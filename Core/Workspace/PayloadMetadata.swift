@@ -1,10 +1,14 @@
 import Foundation
 
-// MARK: - TODO
-// Metadata attached to a Payload (origin, mime type, size, timestamps).
-
+/// Metadata attached to a Payload (origin, size, timestamps).
 struct PayloadMetadata {
-    // MARK: - TODO: let sourceFileName: String?
-    // MARK: - TODO: let byteSize: Int
-    // MARK: - TODO: let createdAt: Date
+    let sourceFileName: String?
+    let byteSize: Int
+    let createdAt: Date
+
+    init(sourceFileName: String? = nil, byteSize: Int, createdAt: Date = Date()) {
+        self.sourceFileName = sourceFileName
+        self.byteSize = byteSize
+        self.createdAt = createdAt
+    }
 }
