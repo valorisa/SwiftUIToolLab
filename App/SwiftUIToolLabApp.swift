@@ -1,17 +1,19 @@
 import SwiftUI
 
-// MARK: - TODO
-// App entry point. Wires AppState and Workspace as EnvironmentObjects
-// and declares the root Scene (WindowGroup / NavigationSplitView).
-
 @main
 struct SwiftUIToolLabApp: App {
-    // MARK: - TODO: instantiate AppState() and Workspace() here
+    @StateObject private var appState = AppState()
+    @StateObject private var workspace = Workspace()
+
+    init() {
+        ServiceLocator.shared.register(Base64Servicing.self, instance: Base64Service())
+    }
 
     var body: some Scene {
         WindowGroup {
-            // MARK: - TODO: root ContentView, injected with .environmentObject(...)
-            EmptyView()
+            Base64View()
+                .environmentObject(appState)
+                .environmentObject(workspace)
         }
     }
 }

@@ -19,12 +19,17 @@ let package = Package(
             path: ".",
             exclude: [
                 "IntegrationTests",
+                "Features/Base64/Tests",
+                "Features/Crypto/Tests",
+                "Features/FileImportExport/Tests",
+                "Features/Settings/Tests",
                 "README.md",
                 "README.fr.md",
                 "LICENSE",
                 ".markdownlint.json",
                 ".gitignore",
-                ".git"
+                ".git",
+                ".github"
             ],
             sources: [
                 "App",
@@ -38,7 +43,14 @@ let package = Package(
         .testTarget(
             name: "SwiftUIToolLabTests",
             dependencies: ["SwiftUIToolLab"],
-            path: "IntegrationTests"
+            path: ".",
+            sources: [
+                "IntegrationTests",
+                "Features/Base64/Tests",
+                "Features/Crypto/Tests",
+                "Features/FileImportExport/Tests",
+                "Features/Settings/Tests"
+            ]
         )
     ]
 )
