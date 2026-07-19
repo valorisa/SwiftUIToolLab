@@ -96,11 +96,11 @@ xcodebuild test -scheme SwiftUIToolLab -destination 'platform=macOS'
 
 ## Feuille de route
 
-- [ ] Phase 0 — Arborescence et fichiers vides avec `// MARK: - TODO`
-- [ ] Phase 1 — Core/Workspace, modèles et protocoles (compile)
-- [ ] Phase 2 — ServiceLocator, injection de dépendances, une feature minimale (compile et
+- [x] Phase 0 — Arborescence et fichiers vides avec `// MARK: - TODO`
+- [x] Phase 1 — Core/Workspace, modèles et protocoles (compile)
+- [x] Phase 2 — ServiceLocator, injection de dépendances, une feature minimale (compile et
       affiche une vue)
-- [ ] Phase 3 — Implémentation complète de Base64 avec tests passants
+- [x] Phase 3 — Implémentation complète de Base64 avec tests passants
 - [ ] Phase 4 — Implémentation complète de Crypto avec tests passants
 - [ ] Phase 5 — Implémentation complète de FileImportExport avec tests passants
 - [ ] Phase 6 — Intégration croisée des fonctionnalités et tests de roundtrip
