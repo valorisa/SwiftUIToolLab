@@ -7,11 +7,12 @@ struct SwiftUIToolLabApp: App {
 
     init() {
         ServiceLocator.shared.register(Base64Servicing.self, instance: Base64Service())
+        ServiceLocator.shared.register(CryptoServicing.self, instance: CryptoService())
     }
 
     var body: some Scene {
         WindowGroup {
-            Base64View()
+            RootView()
                 .environmentObject(appState)
                 .environmentObject(workspace)
         }

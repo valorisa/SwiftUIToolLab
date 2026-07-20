@@ -1,7 +1,7 @@
 import Foundation
 
 final class AppState: ObservableObject {
-    @Published var selectedFeature: FeatureIdentifier? = .base64
+    @Published var selectedFeature: FeatureIdentifier = .base64
 }
 
 enum FeatureIdentifier: String, CaseIterable, Identifiable {
