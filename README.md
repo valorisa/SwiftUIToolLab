@@ -97,7 +97,7 @@ xcodebuild test -scheme SwiftUIToolLab -destination 'platform=macOS'
 - [x] Phase 2 — ServiceLocator, dependency injection, one minimal feature (compiles and renders)
 - [x] Phase 3 — Full Base64 implementation with passing tests
 - [x] Phase 4 — Full Crypto implementation with passing tests
-- [ ] Phase 5 — Full FileImportExport implementation with passing tests
+- [x] Phase 5 — Full FileImportExport implementation with passing tests
 - [ ] Phase 6 — Cross-feature integration and roundtrip tests
 
 ## Contributing
