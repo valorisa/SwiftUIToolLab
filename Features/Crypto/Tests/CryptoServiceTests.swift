@@ -1,4 +1,5 @@
 import XCTest
+import CryptoKit
 @testable import SwiftUIToolLab
 
 final class CryptoServiceTests: XCTestCase {
@@ -13,6 +14,8 @@ final class CryptoServiceTests: XCTestCase {
         sut = nil
         super.tearDown()
     }
+
+    // MARK: - Existing String+password API (unchanged since Phase 4)
 
     func testEncryptDecryptRoundtrip() throws {
         let original = "Grillé mais pas cramé 🔥"
@@ -49,6 +52,41 @@ final class CryptoServiceTests: XCTestCase {
     func testEncryptEmptyInputThrowsInvalidInput() {
         XCTAssertThrowsError(try sut.encrypt("", password: "pw")) { error in
             XCTAssertEqual(error as? CryptoError, .invalidInput)
+        }
+    }
+
+    // MARK: - Core protocol conformance (SecuredTransformer) — Phase 6a
+
+    func testTransformInverseRoundtripOnPayloadWithSecret() throws {
+        let secret = Secret.password("correct-horse-battery-staple")
+        let original = "Grillé mais pas cramé 🔥"
+
+        let transformed = try sut.transform(.text(original), secret: secret)
+        guard case .data = transformed else {
+            XCTFail("Expected .data payload from transform (salt + combined)")
+            return
+        }
+
+        let inverted = try sut.inverse(transformed, secret: secret)
+        guard case .text(let result) = inverted else {
+            XCTFail("Expected .text payload from inverse")
+            return
+        }
+        XCTAssertEqual(result, original)
+    }
+
+    func testTransformWithUnsupportedSecretTypeThrows() {
+        let unsupported = Secret.key(SymmetricKey(size: .bits256))
+        XCTAssertThrowsError(try sut.transform(.text("secret"), secret: unsupported)) { error in
+            XCTAssertEqual(error as? CryptoError, .invalidPassword)
+        }
+    }
+
+    func testInverseOnNonDataPayloadThrows() {
+        XCTAssertThrowsError(
+            try sut.inverse(.text("not-a-data-payload"), secret: .password("pw"))
+        ) { error in
+            XCTAssertEqual(error as? CryptoError, .corruptedData)
         }
     }
 }

@@ -1,20 +1,38 @@
 import Foundation
 import CryptoKit
 
-/// AES-GCM authenticated encryption with a password-derived key (HKDF-SHA256).
-/// Output is Base64(salt + AES.GCM.combined) so the whole roundtrip fits in
-/// a single text field, mirroring Base64Service's UX.
+/// AES-GCM authenticated encryption with a password-derived key
+/// (HKDF-SHA256).
 ///
-/// Note: HKDF is used here for simplicity. A slow KDF (PBKDF2/Argon2) with a
-/// configurable work factor would be preferable against low-entropy
-/// passwords — tracked as a follow-up once CommonCrypto/Argon2 bridging is
-/// wired into the SPM target.
+/// Design decision (Phase 6a, salt placement): the salt now lives
+/// concatenated with AES.GCM's combined output directly inside
+/// Payload.data — "salt + combined" as raw bytes, no manual Base64
+/// step at this layer. Rationale: when this Payload is later written
+/// into a .clab file (LabPayloadFile.payloadData is Data), JSONEncoder
+/// already Base64-encodes Data on its own; encoding it a second time
+/// here (as the pre-6a String-based implementation did) was a
+/// redundant encoding pass with no benefit once the transport type
+/// became Payload instead of String. The String+password
+/// encrypt/decrypt API (CryptoServicing.swift) still returns/accepts
+/// Base64 text, for the benefit of any UI code or test expecting a
+/// copy-pasteable string — that single encode/decode step now lives
+/// only at the adapter boundary, not duplicated here.
+///
+/// Note: HKDF is used here for simplicity. A slow KDF (PBKDF2/Argon2)
+/// with a configurable work factor would be preferable against
+/// low-entropy passwords — tracked as a follow-up once
+/// CommonCrypto/Argon2 bridging is wired into the SPM target.
 final class CryptoService: CryptoServicing {
     private let saltLength = 16
 
-    func encrypt(_ plainText: String, password: String) throws -> String {
+    func transform(_ input: Payload, secret: Secret) throws -> Payload {
+        guard case .password(let password) = secret else {
+            throw CryptoError.invalidPassword
+        }
         guard !password.isEmpty else { throw CryptoError.invalidPassword }
-        guard !plainText.isEmpty else { throw CryptoError.invalidInput }
+        guard case .text(let plainText) = input, !plainText.isEmpty else {
+            throw CryptoError.invalidInput
+        }
 
         let salt = Data((0..<saltLength).map { _ in UInt8.random(in: 0...255) })
         let key = Self.deriveKey(password: password, salt: salt)
@@ -24,12 +42,15 @@ final class CryptoService: CryptoServicing {
             throw CryptoError.corruptedData
         }
 
-        return (salt + combined).base64EncodedString()
+        return .data(salt + combined)
     }
 
-    func decrypt(_ encryptedText: String, password: String) throws -> String {
+    func inverse(_ input: Payload, secret: Secret) throws -> Payload {
+        guard case .password(let password) = secret else {
+            throw CryptoError.invalidPassword
+        }
         guard !password.isEmpty else { throw CryptoError.invalidPassword }
-        guard let raw = Data(base64Encoded: encryptedText), raw.count > saltLength else {
+        guard case .data(let raw) = input, raw.count > saltLength else {
             throw CryptoError.corruptedData
         }
 
@@ -49,10 +70,11 @@ final class CryptoService: CryptoServicing {
             guard let text = String(data: decryptedData, encoding: .utf8) else {
                 throw CryptoError.corruptedData
             }
-            return text
+            return .text(text)
         } catch {
-            // AES-GCM tag mismatch surfaces here — can mean wrong password
-            // or tampered data; we report the more actionable case to the UI.
+            // AES-GCM tag mismatch surfaces here — can mean wrong
+            // password or tampered data; we report the more
+            // actionable case to the UI.
             throw CryptoError.invalidPassword
         }
     }

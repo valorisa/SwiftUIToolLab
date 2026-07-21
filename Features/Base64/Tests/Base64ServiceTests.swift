@@ -14,6 +14,8 @@ final class Base64ServiceTests: XCTestCase {
         super.tearDown()
     }
 
+    // MARK: - Existing String-based API (unchanged since Phase 2)
+
     func testEncodeDecodeRoundtrip() throws {
         let original = "Grillé mais pas cramé 🔥"
         let encoded = sut.encode(original)
@@ -36,8 +38,32 @@ final class Base64ServiceTests: XCTestCase {
     }
 
     func testDecodeEmptyStringThrows() {
-        // An empty round-trip target is treated as invalid input rather
-        // than silently succeeding with an empty result.
         XCTAssertThrowsError(try sut.decode(""))
+    }
+
+    // MARK: - Core protocol conformance (ReversibleTransformer) — Phase 6a
+
+    func testTransformInverseRoundtripOnPayload() throws {
+        let original = "Grillé mais pas cramé 🔥"
+        let transformed = try sut.transform(.text(original))
+        let inverted = try sut.inverse(transformed)
+
+        guard case .text(let result) = inverted else {
+            XCTFail("Expected .text payload after inverse")
+            return
+        }
+        XCTAssertEqual(result, original)
+    }
+
+    func testTransformOnNonTextPayloadThrows() {
+        XCTAssertThrowsError(try sut.transform(.data(Data([0x01])))) { error in
+            XCTAssertEqual(error as? Base64Error, .invalidInput)
+        }
+    }
+
+    func testInverseOnInvalidPayloadThrows() {
+        XCTAssertThrowsError(try sut.inverse(.text("not-valid-base64!!"))) { error in
+            XCTAssertEqual(error as? Base64Error, .invalidInput)
+        }
     }
 }

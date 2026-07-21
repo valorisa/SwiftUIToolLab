@@ -1,9 +1,9 @@
 import Foundation
 import CryptoKit
 
-// MARK: - TODO
-// Transformation with an authenticated secret.
-// Example: encryption, signing.
+/// Transformation with an authenticated secret.
+/// Adopted by CryptoService since Phase 6a — no longer decorative.
+/// Example: encryption, signing.
 
 enum Secret {
     case password(String)
