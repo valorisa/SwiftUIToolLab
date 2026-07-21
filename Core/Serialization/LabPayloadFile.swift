@@ -1,19 +1,18 @@
 import Foundation
 
-// MARK: - TODO
-// Versioned JSON envelope written to disk as a single .cryptolab / .clab file.
-// Bundles payload + encryption header + metadata so the user never manages
-// keys, IVs, or metadata separately.
+// MARK: - LabPayloadFile
 
-struct LabPayloadFile: Codable {
-    let version: Int  // 1
+struct LabPayloadFile: Codable, Equatable {
+    let version: Int
     let encryption: EncryptionHeader?
-    // MARK: - TODO: let payload: PayloadHeader
-    // MARK: - TODO: let metadata: MetadataHeader
+    let payloadData: Data?
+    let metadata: PayloadMetadata?
 }
 
-struct EncryptionHeader: Codable {
-    let algorithm: String  // "AES-GCM-256" | "ChaChaPoly"
+// MARK: - EncryptionHeader
+
+struct EncryptionHeader: Codable, Equatable {
+    let algorithm: String
     let iv: Data
     let tag: Data
     let salt: Data?

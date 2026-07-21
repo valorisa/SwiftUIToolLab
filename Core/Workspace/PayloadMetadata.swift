@@ -1,14 +1,9 @@
 import Foundation
 
-/// Metadata attached to a Payload (origin, size, timestamps).
-struct PayloadMetadata {
-    let sourceFileName: String?
-    let byteSize: Int
-    let createdAt: Date
+// MARK: - PayloadMetadata
 
-    init(sourceFileName: String? = nil, byteSize: Int, createdAt: Date = Date()) {
-        self.sourceFileName = sourceFileName
-        self.byteSize = byteSize
-        self.createdAt = createdAt
-    }
+struct PayloadMetadata: Codable, Equatable {
+    let createdAt: Date
+    let sourceFileName: String?
+    let toolVersion: String
 }

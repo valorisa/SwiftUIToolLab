@@ -1,7 +1,5 @@
 import SwiftUI
 
-/// Composition root's UI. Only App/ is allowed to import multiple features —
-/// individual features never depend on each other directly.
 struct RootView: View {
     @EnvironmentObject private var appState: AppState
 
@@ -14,6 +12,10 @@ struct RootView: View {
             CryptoView()
                 .tabItem { Label("Crypto", systemImage: "lock") }
                 .tag(FeatureIdentifier.crypto)
+
+            FileImportExportView()
+                .tabItem { Label("Files", systemImage: "folder") }
+                .tag(FeatureIdentifier.fileImportExport)
         }
     }
 }

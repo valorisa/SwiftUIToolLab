@@ -8,6 +8,7 @@ struct SwiftUIToolLabApp: App {
     init() {
         ServiceLocator.shared.register(Base64Servicing.self, instance: Base64Service())
         ServiceLocator.shared.register(CryptoServicing.self, instance: CryptoService())
+        ServiceLocator.shared.register(FileImportExportServicing.self, instance: FileImportExportService())
     }
 
     var body: some Scene {
