@@ -30,33 +30,24 @@ final class Base64ViewModel: ObservableObject {
             outputText = try service.decode(inputText)
             writeToWorkspace(.text(outputText), transformerName: "base64.decode")
         } catch {
-            errorMessage = "Entrée Base64 invalide."
+            errorMessage = NSLocalizedString("base64.decode_error", comment: "Shown when the Base64 input string cannot be decoded")
             outputText = ""
         }
     }
 
     // MARK: - Workspace sync
 
-    /// Reads Workspace.currentPayload once at VM creation, if a
-    /// compatible (.text) payload is already there — e.g. handed off
-    /// from another tab. Non-text payloads (binary file imports) are
-    /// left untouched; Base64 only knows how to operate on text.
     private func loadFromWorkspaceIfAvailable() {
         if case .text(let text) = workspace.currentPayload {
             inputText = text
         }
     }
 
-    /// Writes a successful transformation result back into the
-    /// shared Workspace so other tabs can pick it up. isProcessing is
-    /// never toggled anywhere in the app (Phase 6b scope), so
-    /// writeLocked is unreachable today — handled defensively rather
-    /// than silently ignored via try?.
     private func writeToWorkspace(_ payload: Payload, transformerName: String) {
         do {
             try workspace.updatePayload(payload, transformerName: transformerName)
         } catch {
-            errorMessage = "Impossible de synchroniser avec le Workspace (verrouillé)."
+            errorMessage = NSLocalizedString("workspace.sync_locked_error", comment: "Shown when Workspace.updatePayload throws because isProcessing is true")
         }
     }
 }

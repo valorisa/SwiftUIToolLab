@@ -1,1 +1,40 @@
-/* MARK: - TODO: base (English) localization strings */
+/* Base64 feature */
+"base64.input_label" = "Input";
+"base64.encode_button" = "Encode";
+"base64.decode_button" = "Decode";
+"base64.output_label" = "Output";
+"base64.copy_button" = "Copy to Clipboard";
+"base64.decode_error" = "Invalid Base64 input.";
+
+/* Crypto feature */
+"crypto.input_label" = "Input";
+"crypto.password_placeholder" = "Password";
+"crypto.encrypt_button" = "Encrypt";
+"crypto.decrypt_button" = "Decrypt";
+"crypto.output_label" = "Output";
+"crypto.copy_button" = "Copy to Clipboard";
+"crypto.password_required_error" = "Password required.";
+"crypto.empty_input_error" = "The text to encrypt is empty.";
+"crypto.wrong_password_error" = "Incorrect password.";
+"crypto.corrupted_data_error" = "Invalid or corrupted encrypted data.";
+"crypto.encrypt_generic_error" = "Encryption error.";
+"crypto.decrypt_generic_error" = "Decryption error.";
+
+/* FileImportExport feature */
+"fileImportExport.title" = "File Import / Export";
+"fileImportExport.import_file_button" = "Import File";
+"fileImportExport.import_file_panel_title" = "Import a file";
+"fileImportExport.import_lab_button" = "Import .clab";
+"fileImportExport.import_lab_panel_title" = "Import a .clab file";
+"fileImportExport.imported_file_label" = "Imported: %@";
+"fileImportExport.no_file_imported" = "No file imported yet.";
+"fileImportExport.filename_placeholder" = "File name";
+"fileImportExport.include_metadata_toggle" = "Include metadata";
+"fileImportExport.export_button" = "Export as .clab";
+"fileImportExport.exported_to_label" = "Exported to: %@";
+"fileImportExport.error_alert_title" = "Error";
+"fileImportExport.unknown_error_fallback" = "Unknown error";
+"fileImportExport.ok_button" = "OK";
+
+/* Shared across features (Workspace plumbing) */
+"workspace.sync_locked_error" = "Unable to sync with the Workspace (locked).";

@@ -25,13 +25,13 @@ final class CryptoViewModel: ObservableObject {
             outputText = try service.encrypt(inputText, password: password)
             writeToWorkspace(.text(outputText), transformerName: "crypto.encrypt")
         } catch CryptoError.invalidPassword {
-            errorMessage = "Mot de passe requis."
+            errorMessage = NSLocalizedString("crypto.password_required_error", comment: "Shown when the password field is empty during encryption")
             outputText = ""
         } catch CryptoError.invalidInput {
-            errorMessage = "Le texte à chiffrer est vide."
+            errorMessage = NSLocalizedString("crypto.empty_input_error", comment: "Shown when the plaintext field is empty during encryption")
             outputText = ""
         } catch {
-            errorMessage = "Erreur de chiffrement."
+            errorMessage = NSLocalizedString("crypto.encrypt_generic_error", comment: "Fallback shown for unexpected encryption failures")
             outputText = ""
         }
     }
@@ -42,25 +42,19 @@ final class CryptoViewModel: ObservableObject {
             outputText = try service.decrypt(inputText, password: password)
             writeToWorkspace(.text(outputText), transformerName: "crypto.decrypt")
         } catch CryptoError.invalidPassword {
-            errorMessage = "Mot de passe incorrect."
+            errorMessage = NSLocalizedString("crypto.wrong_password_error", comment: "Shown when decryption fails due to a wrong password")
             outputText = ""
         } catch CryptoError.corruptedData {
-            errorMessage = "Données chiffrées invalides ou corrompues."
+            errorMessage = NSLocalizedString("crypto.corrupted_data_error", comment: "Shown when the ciphertext is malformed or tampered with")
             outputText = ""
         } catch {
-            errorMessage = "Erreur de déchiffrement."
+            errorMessage = NSLocalizedString("crypto.decrypt_generic_error", comment: "Fallback shown for unexpected decryption failures")
             outputText = ""
         }
     }
 
     // MARK: - Workspace sync
 
-    /// Reads Workspace.currentPayload once at VM creation. .text
-    /// payloads are used as-is (typical handoff after a Base64
-    /// encode). .data payloads (e.g. a raw file import) are shown as
-    /// their Base64 representation, matching what encrypt/decrypt
-    /// expect as ciphertext input — a best-effort default, not a
-    /// claim that arbitrary binary data is meaningful plaintext.
     private func loadFromWorkspaceIfAvailable() {
         switch workspace.currentPayload {
         case .text(let text):
@@ -72,16 +66,11 @@ final class CryptoViewModel: ObservableObject {
         }
     }
 
-    /// Writes a successful transformation result back into the
-    /// shared Workspace so other tabs can pick it up. isProcessing is
-    /// never toggled anywhere in the app (Phase 6b scope), so
-    /// writeLocked is unreachable today — handled defensively rather
-    /// than silently ignored via try?.
     private func writeToWorkspace(_ payload: Payload, transformerName: String) {
         do {
             try workspace.updatePayload(payload, transformerName: transformerName)
         } catch {
-            errorMessage = "Impossible de synchroniser avec le Workspace (verrouillé)."
+            errorMessage = NSLocalizedString("workspace.sync_locked_error", comment: "Shown when Workspace.updatePayload throws because isProcessing is true")
         }
     }
 }
