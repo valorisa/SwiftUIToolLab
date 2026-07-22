@@ -17,11 +17,19 @@ final class FileImportExportViewModel: ObservableObject {
     @Published var lastExportURL: URL?
 
     private let service: FileImportExportServicing
+    private let workspace: Workspace
 
-    init(service: FileImportExportServicing? = nil) {
+    init(
+        service: FileImportExportServicing? = nil,
+        workspace: Workspace? = nil
+    ) {
         self.service = service
             ?? ServiceLocator.shared.resolve(FileImportExportServicing.self)
             ?? FileImportExportService()
+        self.workspace = workspace
+            ?? ServiceLocator.shared.resolve(Workspace.self)
+            ?? Workspace()
+        loadFromWorkspaceIfAvailable()
     }
 
     // MARK: - Import
@@ -43,6 +51,7 @@ final class FileImportExportViewModel: ObservableObject {
             importedPayload = payload
             importedFileInfo = buildFileInfo(from: url, payload: payload)
             errorMessage = nil
+            writeToWorkspace(payload, transformerName: "fileImportExport.import")
         } catch {
             presentError(error)
         }
@@ -62,8 +71,10 @@ final class FileImportExportViewModel: ObservableObject {
 
         do {
             let labFile = try service.importLabFile(from: url)
-            importedPayload = .data(labFile.payloadData ?? Data())
+            let payload = Payload.data(labFile.payloadData ?? Data())
+            importedPayload = payload
             errorMessage = nil
+            writeToWorkspace(payload, transformerName: "fileImportExport.importLab")
         } catch {
             presentError(error)
         }
@@ -71,7 +82,21 @@ final class FileImportExportViewModel: ObservableObject {
 
     // MARK: - Export
 
+    /// Exports the most relevant payload: the shared Workspace first
+    /// (carries the latest state of the cross-tab flow — e.g. a file
+    /// imported here, then Base64-encoded, then encrypted in other
+    /// tabs), falling back to the locally imported payload if the
+    /// Workspace is empty. This is the level-1 cross-feature flow
+    /// (D2 = (b)): no Pipeline, the Workspace is the shared clipboard.
+    /// Reading the Workspace at call time (not just at VM init) is
+    /// essential: the VM is a long-lived @StateObject, so a payload
+    /// produced in another tab AFTER this VM was created would
+    /// otherwise be invisible to export.
     func exportPayload() {
+        if let workspacePayload = workspace.currentPayload {
+            performExport(workspacePayload)
+            return
+        }
         guard case .unknown = importedPayload else {
             performExport(importedPayload)
             return
@@ -104,6 +129,32 @@ final class FileImportExportViewModel: ObservableObject {
             errorMessage = nil
         } catch {
             presentError(error)
+        }
+    }
+
+    // MARK: - Workspace sync
+
+    /// Reads Workspace.currentPayload once at VM creation, so a
+    /// payload produced in another tab (Base64 encode, Crypto
+    /// encrypt) is available for export here. importedFileInfo stays
+    /// nil in that case (the Workspace carries no file metadata) —
+    /// acceptable: the UI shows "No file imported yet" for file
+    /// info, but the payload is exportable.
+    private func loadFromWorkspaceIfAvailable() {
+        guard let payload = workspace.currentPayload else { return }
+        importedPayload = payload
+    }
+
+    /// Writes a freshly imported payload back into the shared
+    /// Workspace so other tabs can pick it up. isProcessing is never
+    /// toggled anywhere in the app (Phase 6b scope), so writeLocked is
+    /// unreachable today — handled defensively rather than silently
+    /// ignored via try?.
+    private func writeToWorkspace(_ payload: Payload, transformerName: String) {
+        do {
+            try workspace.updatePayload(payload, transformerName: transformerName)
+        } catch {
+            errorMessage = "Impossible de synchroniser avec le Workspace (verrouillé)."
         }
     }
 
