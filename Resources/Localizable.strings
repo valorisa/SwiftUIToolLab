@@ -36,5 +36,15 @@
 "fileImportExport.unknown_error_fallback" = "Unknown error";
 "fileImportExport.ok_button" = "OK";
 
+/* FileImportExport errors (v2-A follow-up) */
+"fileImportExport.error.file_not_found" = "File not found: %@";
+"fileImportExport.error.file_too_large" = "File too large: %lld bytes (limit: %lld bytes)";
+"fileImportExport.error.unreadable_file" = "Cannot read file: %@";
+"fileImportExport.error.unsupported_format" = "Unsupported file format: .%@";
+"fileImportExport.error.serialization_failed" = "Could not create the .clab file: %@";
+"fileImportExport.error.deserialization_failed" = "Could not read the .clab file: %@";
+"fileImportExport.error.write_failed" = "Cannot write to: %@";
+"fileImportExport.error.empty_file" = "The file is empty: %@";
+
 /* Shared across features (Workspace plumbing) */
 "workspace.sync_locked_error" = "Unable to sync with the Workspace (locked).";

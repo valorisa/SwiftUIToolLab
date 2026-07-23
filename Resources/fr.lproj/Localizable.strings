@@ -36,5 +36,15 @@
 "fileImportExport.unknown_error_fallback" = "Erreur inconnue";
 "fileImportExport.ok_button" = "OK";
 
+/* Erreurs FileImportExport (suivi v2-A) */
+"fileImportExport.error.file_not_found" = "Fichier introuvable : %@";
+"fileImportExport.error.file_too_large" = "Fichier trop volumineux : %lld octets (limite : %lld octets)";
+"fileImportExport.error.unreadable_file" = "Impossible de lire le fichier : %@";
+"fileImportExport.error.unsupported_format" = "Format de fichier non pris en charge : .%@";
+"fileImportExport.error.serialization_failed" = "Impossible de créer le fichier .clab : %@";
+"fileImportExport.error.deserialization_failed" = "Impossible de lire le fichier .clab : %@";
+"fileImportExport.error.write_failed" = "Impossible d'écrire vers : %@";
+"fileImportExport.error.empty_file" = "Le fichier est vide : %@";
+
 /* Commun à toutes les features (plomberie Workspace) */
 "workspace.sync_locked_error" = "Impossible de synchroniser avec le Workspace (verrouillé).";
