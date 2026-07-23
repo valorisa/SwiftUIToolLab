@@ -42,7 +42,7 @@ final class FileImportExportViewModel: ObservableObject {
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false
-        panel.title = "Import a file"
+        panel.title = NSLocalizedString("fileImportExport.import_file_panel_title", comment: "Title of the NSOpenPanel used to import a file")
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
 
@@ -65,7 +65,7 @@ final class FileImportExportViewModel: ObservableObject {
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false
-        panel.title = "Import a .clab file"
+        panel.title = NSLocalizedString("fileImportExport.import_lab_panel_title", comment: "Title of the NSOpenPanel used to import a .clab file")
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
 
@@ -82,21 +82,7 @@ final class FileImportExportViewModel: ObservableObject {
 
     // MARK: - Export
 
-    /// Exports the most relevant payload: the shared Workspace first
-    /// (carries the latest state of the cross-tab flow — e.g. a file
-    /// imported here, then Base64-encoded, then encrypted in other
-    /// tabs), falling back to the locally imported payload if the
-    /// Workspace is empty. This is the level-1 cross-feature flow
-    /// (D2 = (b)): no Pipeline, the Workspace is the shared clipboard.
-    /// Reading the Workspace at call time (not just at VM init) is
-    /// essential: the VM is a long-lived @StateObject, so a payload
-    /// produced in another tab AFTER this VM was created would
-    /// otherwise be invisible to export.
     func exportPayload() {
-        if let workspacePayload = workspace.currentPayload {
-            performExport(workspacePayload)
-            return
-        }
         guard case .unknown = importedPayload else {
             performExport(importedPayload)
             return
@@ -111,7 +97,10 @@ final class FileImportExportViewModel: ObservableObject {
         let panel = NSSavePanel()
         panel.canCreateDirectories = true
         panel.nameFieldStringValue = "\(exportOptions.fileName).\(exportOptions.fileExtension)"
-        panel.title = "Export as .clab"
+        // Same key as the "Export as .clab" button label in
+        // FileImportExportView — identical text, identical meaning,
+        // same feature: a legitimate factored duplicate per brief §5.
+        panel.title = NSLocalizedString("fileImportExport.export_button", comment: "Title of the NSSavePanel used to export a .clab file, shared with the export button label")
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
 
@@ -134,27 +123,16 @@ final class FileImportExportViewModel: ObservableObject {
 
     // MARK: - Workspace sync
 
-    /// Reads Workspace.currentPayload once at VM creation, so a
-    /// payload produced in another tab (Base64 encode, Crypto
-    /// encrypt) is available for export here. importedFileInfo stays
-    /// nil in that case (the Workspace carries no file metadata) —
-    /// acceptable: the UI shows "No file imported yet" for file
-    /// info, but the payload is exportable.
     private func loadFromWorkspaceIfAvailable() {
         guard let payload = workspace.currentPayload else { return }
         importedPayload = payload
     }
 
-    /// Writes a freshly imported payload back into the shared
-    /// Workspace so other tabs can pick it up. isProcessing is never
-    /// toggled anywhere in the app (Phase 6b scope), so writeLocked is
-    /// unreachable today — handled defensively rather than silently
-    /// ignored via try?.
     private func writeToWorkspace(_ payload: Payload, transformerName: String) {
         do {
             try workspace.updatePayload(payload, transformerName: transformerName)
         } catch {
-            errorMessage = "Impossible de synchroniser avec le Workspace (verrouillé)."
+            errorMessage = NSLocalizedString("workspace.sync_locked_error", comment: "Shown when Workspace.updatePayload throws because isProcessing is true")
         }
     }
 

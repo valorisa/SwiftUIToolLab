@@ -1,1 +1,40 @@
-/* MARK: - TODO: chaines de localisation francaises */
+/* Feature Base64 */
+"base64.input_label" = "Entrée";
+"base64.encode_button" = "Encoder";
+"base64.decode_button" = "Décoder";
+"base64.output_label" = "Sortie";
+"base64.copy_button" = "Copier dans le presse-papiers";
+"base64.decode_error" = "Entrée Base64 invalide.";
+
+/* Feature Crypto */
+"crypto.input_label" = "Entrée";
+"crypto.password_placeholder" = "Mot de passe";
+"crypto.encrypt_button" = "Chiffrer";
+"crypto.decrypt_button" = "Déchiffrer";
+"crypto.output_label" = "Sortie";
+"crypto.copy_button" = "Copier dans le presse-papiers";
+"crypto.password_required_error" = "Mot de passe requis.";
+"crypto.empty_input_error" = "Le texte à chiffrer est vide.";
+"crypto.wrong_password_error" = "Mot de passe incorrect.";
+"crypto.corrupted_data_error" = "Données chiffrées invalides ou corrompues.";
+"crypto.encrypt_generic_error" = "Erreur de chiffrement.";
+"crypto.decrypt_generic_error" = "Erreur de déchiffrement.";
+
+/* Feature FileImportExport */
+"fileImportExport.title" = "Import / Export de fichiers";
+"fileImportExport.import_file_button" = "Importer un fichier";
+"fileImportExport.import_file_panel_title" = "Importer un fichier";
+"fileImportExport.import_lab_button" = "Importer .clab";
+"fileImportExport.import_lab_panel_title" = "Importer un fichier .clab";
+"fileImportExport.imported_file_label" = "Importé : %@";
+"fileImportExport.no_file_imported" = "Aucun fichier importé pour le moment.";
+"fileImportExport.filename_placeholder" = "Nom du fichier";
+"fileImportExport.include_metadata_toggle" = "Inclure les métadonnées";
+"fileImportExport.export_button" = "Exporter en .clab";
+"fileImportExport.exported_to_label" = "Exporté vers : %@";
+"fileImportExport.error_alert_title" = "Erreur";
+"fileImportExport.unknown_error_fallback" = "Erreur inconnue";
+"fileImportExport.ok_button" = "OK";
+
+/* Commun à toutes les features (plomberie Workspace) */
+"workspace.sync_locked_error" = "Impossible de synchroniser avec le Workspace (verrouillé).";
