@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 @MainActor
 final class CryptoViewModel: ObservableObject {
@@ -9,21 +10,22 @@ final class CryptoViewModel: ObservableObject {
 
     private let service: CryptoServicing
     private let workspace: Workspace
+    private var cancellables: Set<AnyCancellable> = []
 
     init(
         service: CryptoServicing = ServiceLocator.shared.resolve(CryptoServicing.self) ?? CryptoService(),
-        workspace: Workspace = ServiceLocator.shared.resolve(Workspace.self) ?? Workspace()
+        workspace: Workspace = ServiceLocator.shared.resolve(Workspace.self) ?? Workspace(),
+        appState: AppState? = ServiceLocator.shared.resolve(AppState.self)
     ) {
         self.service = service
         self.workspace = workspace
         loadFromWorkspaceIfAvailable()
+        subscribeToPurgeSignal(from: appState)
     }
 
     /// v2-B: password is purged after every call, success or failure —
-    /// a deliberate UX trade-off for a COMPLETE threat model (D-v2-3):
-    /// a typo means retyping the password, but it never lingers in
-    /// memory after use. Targeted purge only: inputText/outputText are
-    /// untouched here (Chantier 3, deferred to v2-B-bis).
+    /// a deliberate UX trade-off for a COMPLETE threat model (D-v2-3).
+    /// Targeted purge only: inputText/outputText are untouched here.
     func encrypt() {
         errorMessage = nil
         defer { password = "" }
@@ -63,9 +65,29 @@ final class CryptoViewModel: ObservableObject {
         }
     }
 
+    /// v2-B-bis: wipes the remaining sensitive surface (input/output
+    /// text). Triggered by RootView leaving the Crypto tab, via
+    /// AppState.purgeSensitiveDataSignal. Deliberate UX trade-off
+    /// (COMPLETE threat model): the user loses their text when
+    /// switching tabs, and it does NOT come back automatically when
+    /// they return — see loadFromWorkspaceIfAvailable() below.
+    func clearSensitiveData() {
+        inputText = ""
+        outputText = ""
+        password = ""
+    }
+
     // MARK: - Workspace sync
 
+    /// v2-B-bis: does NOT reload a payload whose last update was
+    /// sensitive-and-unrecorded — reloading it here would make the
+    /// clearSensitiveData() purge cosmetic (the text would just come
+    /// back from the Workspace on the next tab visit). Non-sensitive
+    /// payloads (e.g. a Base64-encoded value handed off from another
+    /// tab) are still picked up exactly as before v2-B-bis.
     private func loadFromWorkspaceIfAvailable() {
+        guard !workspace.lastUpdateWasSensitiveAndUnrecorded else { return }
+
         switch workspace.currentPayload {
         case .text(let text):
             inputText = text
@@ -76,14 +98,28 @@ final class CryptoViewModel: ObservableObject {
         }
     }
 
-    /// isSensitive defaults to false so any future non-crypto caller of
-    /// this helper doesn't need to opt in explicitly; encrypt()/decrypt()
-    /// above always pass true.
     private func writeToWorkspace(_ payload: Payload, transformerName: String, isSensitive: Bool = false) {
         do {
             try workspace.updatePayload(payload, transformerName: transformerName, isSensitive: isSensitive)
         } catch {
             errorMessage = NSLocalizedString("workspace.sync_locked_error", comment: "Shown when Workspace.updatePayload throws because isProcessing is true")
         }
+    }
+
+    // MARK: - Purge signal subscription
+
+    /// Subscribes to AppState.purgeSensitiveDataSignal so RootView can
+    /// trigger a purge without holding a reference to this ViewModel
+    /// (Question 4, Option B). [weak self] avoids a retain cycle
+    /// through the Combine pipeline; storing the AnyCancellable in
+    /// `cancellables` cancels the subscription automatically when this
+    /// instance deallocates — no explicit deinit needed for that, but
+    /// documented here since the brief calls it out explicitly.
+    private func subscribeToPurgeSignal(from appState: AppState?) {
+        appState?.purgeSensitiveDataSignal
+            .sink { [weak self] in
+                self?.clearSensitiveData()
+            }
+            .store(in: &cancellables)
     }
 }
