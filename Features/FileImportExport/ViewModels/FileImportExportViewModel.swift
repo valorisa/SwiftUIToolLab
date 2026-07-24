@@ -22,16 +22,16 @@ final class FileImportExportViewModel: ObservableObject {
     private let savePanelFactory: () -> SavePanelProviding
 
     /// v2-C: panels are injected as factories rather than instantiated
-    /// inline, closing v1's D5 debt (FileImportExportViewModel was
-    /// previously untestable end-to-end because NSOpenPanel/NSSavePanel
-    /// were hardcoded). Defaults construct real panels, exactly as
-    /// before this change — production behavior is unchanged; only
-    /// tests substitute MockOpenPanel/MockSavePanel.
+    /// inline, closing v1's D5 debt. Defaults construct real panels
+    /// via OpenPanelWrapper/SavePanelWrapper (wrappers needed because
+    /// the Swift compiler cannot infer protocol conformance for ObjC
+    /// classes via a trivial extension) — production behavior is
+    /// unchanged; only tests substitute MockOpenPanel/MockSavePanel.
     init(
         service: FileImportExportServicing? = nil,
         workspace: Workspace? = nil,
-        openPanelFactory: @escaping () -> OpenPanelProviding = { NSOpenPanel() },
-        savePanelFactory: @escaping () -> SavePanelProviding = { NSSavePanel() }
+        openPanelFactory: @escaping () -> OpenPanelProviding = { OpenPanelWrapper() },
+        savePanelFactory: @escaping () -> SavePanelProviding = { SavePanelWrapper() }
     ) {
         self.service = service
             ?? ServiceLocator.shared.resolve(FileImportExportServicing.self)
