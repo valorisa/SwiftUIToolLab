@@ -19,11 +19,18 @@ final class CryptoViewModel: ObservableObject {
         loadFromWorkspaceIfAvailable()
     }
 
+    /// v2-B: password is purged after every call, success or failure —
+    /// a deliberate UX trade-off for a COMPLETE threat model (D-v2-3):
+    /// a typo means retyping the password, but it never lingers in
+    /// memory after use. Targeted purge only: inputText/outputText are
+    /// untouched here (Chantier 3, deferred to v2-B-bis).
     func encrypt() {
         errorMessage = nil
+        defer { password = "" }
+
         do {
             outputText = try service.encrypt(inputText, password: password)
-            writeToWorkspace(.text(outputText), transformerName: "crypto.encrypt")
+            writeToWorkspace(.text(outputText), transformerName: "crypto.encrypt", isSensitive: true)
         } catch CryptoError.invalidPassword {
             errorMessage = NSLocalizedString("crypto.password_required_error", comment: "Shown when the password field is empty during encryption")
             outputText = ""
@@ -36,11 +43,14 @@ final class CryptoViewModel: ObservableObject {
         }
     }
 
+    /// See encrypt() doc comment — same targeted, always-purge policy.
     func decrypt() {
         errorMessage = nil
+        defer { password = "" }
+
         do {
             outputText = try service.decrypt(inputText, password: password)
-            writeToWorkspace(.text(outputText), transformerName: "crypto.decrypt")
+            writeToWorkspace(.text(outputText), transformerName: "crypto.decrypt", isSensitive: true)
         } catch CryptoError.invalidPassword {
             errorMessage = NSLocalizedString("crypto.wrong_password_error", comment: "Shown when decryption fails due to a wrong password")
             outputText = ""
@@ -66,9 +76,12 @@ final class CryptoViewModel: ObservableObject {
         }
     }
 
-    private func writeToWorkspace(_ payload: Payload, transformerName: String) {
+    /// isSensitive defaults to false so any future non-crypto caller of
+    /// this helper doesn't need to opt in explicitly; encrypt()/decrypt()
+    /// above always pass true.
+    private func writeToWorkspace(_ payload: Payload, transformerName: String, isSensitive: Bool = false) {
         do {
-            try workspace.updatePayload(payload, transformerName: transformerName)
+            try workspace.updatePayload(payload, transformerName: transformerName, isSensitive: isSensitive)
         } catch {
             errorMessage = NSLocalizedString("workspace.sync_locked_error", comment: "Shown when Workspace.updatePayload throws because isProcessing is true")
         }
