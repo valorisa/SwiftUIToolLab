@@ -7,12 +7,9 @@ import Combine
 ///
 /// v2-B: updatePayload(_:transformerName:isSensitive:) lets a caller
 /// mark a result as sensitive. Sensitive results still update
-/// currentPayload (so the UI reflects them), but are deliberately never
-/// appended to `history` — undo/redo can't resurrect a secret. Deciding
-/// *what counts as sensitive* is the caller's job (e.g.
-/// CryptoViewModel), not the Workspace's: this stays plumbing, not
-/// business logic, consistent with "Workspace = pure container" since
-/// Phase 1.
+/// currentPayload (so the UI reflects them and the v1 cross-feature
+/// handoff keeps working), but are deliberately never appended to
+/// `history` — undo/redo can't resurrect a secret.
 final class Workspace: ObservableObject {
     static let maxHistoryLength = 50
 
@@ -21,12 +18,17 @@ final class Workspace: ObservableObject {
     @Published private(set) var historyIndex: Int = -1
     @Published var isProcessing: Bool = false
 
-    /// True when currentPayload was produced by a sensitive update that
-    /// was intentionally NOT recorded in `history`. Lets undo() know it
-    /// must jump back to history[historyIndex] (the last *recorded*
-    /// state) instead of decrementing historyIndex again — no new index
-    /// was ever pushed for the sensitive result in the first place.
-    private var currentPayloadIsUnrecordedSensitive: Bool = false
+    /// True exactly when the LAST updatePayload call was sensitive and
+    /// therefore not recorded in `history`. This is a derived fact
+    /// about the last operation, NOT a durable property of whatever
+    /// currentPayload happens to hold right now — renamed from v2-B's
+    /// `currentPayloadIsUnrecordedSensitive` specifically to make that
+    /// distinction unambiguous to future readers (v2-B-bis brief,
+    /// Question 2). It flips back to false as soon as any subsequent
+    /// update (sensitive or not) occurs, or after undo()/redo() moves
+    /// currentPayload to an already-recorded (hence non-sensitive by
+    /// construction) history entry.
+    private(set) var lastUpdateWasSensitiveAndUnrecorded: Bool = false
 
     enum WorkspaceError: Error, Equatable {
         case writeLocked
@@ -35,14 +37,14 @@ final class Workspace: ObservableObject {
     /// Applies a new payload. Non-sensitive payloads are recorded in
     /// history and become the new undo/redo anchor, as before v2-B.
     /// Sensitive payloads update currentPayload only, bypassing history
-    /// entirely — see the type-level doc comment above.
-    /// Throws if the Workspace is currently locked (isProcessing).
+    /// entirely. Throws if the Workspace is currently locked
+    /// (isProcessing).
     func updatePayload(_ newPayload: Payload, transformerName: String = "unknown", isSensitive: Bool = false) throws {
         guard !isProcessing else { throw WorkspaceError.writeLocked }
 
         if isSensitive {
             currentPayload = newPayload
-            currentPayloadIsUnrecordedSensitive = true
+            lastUpdateWasSensitiveAndUnrecorded = true
             return
         }
 
@@ -60,22 +62,22 @@ final class Workspace: ObservableObject {
 
         historyIndex = history.count - 1
         currentPayload = newPayload
-        currentPayloadIsUnrecordedSensitive = false
+        lastUpdateWasSensitiveAndUnrecorded = false
     }
 
     func clearPayload() {
         currentPayload = nil
         history.removeAll()
         historyIndex = -1
-        currentPayloadIsUnrecordedSensitive = false
+        lastUpdateWasSensitiveAndUnrecorded = false
     }
 
     func undo() {
-        if currentPayloadIsUnrecordedSensitive {
+        if lastUpdateWasSensitiveAndUnrecorded {
             // Skip the sensitive detour: return to the last recorded
             // state instead of decrementing historyIndex, since no
             // index was ever pushed for the sensitive result.
-            currentPayloadIsUnrecordedSensitive = false
+            lastUpdateWasSensitiveAndUnrecorded = false
             currentPayload = historyIndex >= 0 ? history[historyIndex].payload : nil
             return
         }
@@ -94,6 +96,6 @@ final class Workspace: ObservableObject {
         guard historyIndex < history.count - 1 else { return }
         historyIndex += 1
         currentPayload = history[historyIndex].payload
-        currentPayloadIsUnrecordedSensitive = false
+        lastUpdateWasSensitiveAndUnrecorded = false
     }
 }
