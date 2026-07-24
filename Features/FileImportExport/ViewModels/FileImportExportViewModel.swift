@@ -18,10 +18,20 @@ final class FileImportExportViewModel: ObservableObject {
 
     private let service: FileImportExportServicing
     private let workspace: Workspace
+    private let openPanelFactory: () -> OpenPanelProviding
+    private let savePanelFactory: () -> SavePanelProviding
 
+    /// v2-C: panels are injected as factories rather than instantiated
+    /// inline, closing v1's D5 debt (FileImportExportViewModel was
+    /// previously untestable end-to-end because NSOpenPanel/NSSavePanel
+    /// were hardcoded). Defaults construct real panels, exactly as
+    /// before this change — production behavior is unchanged; only
+    /// tests substitute MockOpenPanel/MockSavePanel.
     init(
         service: FileImportExportServicing? = nil,
-        workspace: Workspace? = nil
+        workspace: Workspace? = nil,
+        openPanelFactory: @escaping () -> OpenPanelProviding = { NSOpenPanel() },
+        savePanelFactory: @escaping () -> SavePanelProviding = { NSSavePanel() }
     ) {
         self.service = service
             ?? ServiceLocator.shared.resolve(FileImportExportServicing.self)
@@ -29,6 +39,8 @@ final class FileImportExportViewModel: ObservableObject {
         self.workspace = workspace
             ?? ServiceLocator.shared.resolve(Workspace.self)
             ?? Workspace()
+        self.openPanelFactory = openPanelFactory
+        self.savePanelFactory = savePanelFactory
         loadFromWorkspaceIfAvailable()
     }
 
@@ -38,11 +50,10 @@ final class FileImportExportViewModel: ObservableObject {
         isImporting = true
         defer { isImporting = false }
 
-        let panel = NSOpenPanel()
+        var panel = openPanelFactory()
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
-        panel.allowsMultipleSelection = false
-        panel.title = NSLocalizedString("fileImportExport.import_file_panel_title", comment: "Title of the NSOpenPanel used to import a file")
+        panel.title = NSLocalizedString("fileImportExport.import_file_panel_title", comment: "Title of the panel used to import a file")
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
 
@@ -61,11 +72,10 @@ final class FileImportExportViewModel: ObservableObject {
         isImporting = true
         defer { isImporting = false }
 
-        let panel = NSOpenPanel()
+        var panel = openPanelFactory()
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
-        panel.allowsMultipleSelection = false
-        panel.title = NSLocalizedString("fileImportExport.import_lab_panel_title", comment: "Title of the NSOpenPanel used to import a .clab file")
+        panel.title = NSLocalizedString("fileImportExport.import_lab_panel_title", comment: "Title of the panel used to import a .clab file")
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
 
@@ -94,13 +104,10 @@ final class FileImportExportViewModel: ObservableObject {
         isExporting = true
         defer { isExporting = false }
 
-        let panel = NSSavePanel()
+        var panel = savePanelFactory()
         panel.canCreateDirectories = true
         panel.nameFieldStringValue = "\(exportOptions.fileName).\(exportOptions.fileExtension)"
-        // Same key as the "Export as .clab" button label in
-        // FileImportExportView — identical text, identical meaning,
-        // same feature: a legitimate factored duplicate per brief §5.
-        panel.title = NSLocalizedString("fileImportExport.export_button", comment: "Title of the NSSavePanel used to export a .clab file, shared with the export button label")
+        panel.title = NSLocalizedString("fileImportExport.export_button", comment: "Title of the panel used to export a .clab file, shared with the export button label")
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
 
