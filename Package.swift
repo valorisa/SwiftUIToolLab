@@ -53,6 +53,9 @@ let package = Package(
                 "Features/LinearOperator/Tests",
                 "Features/Settings/Tests"
             ],
+            exclude: [
+                "Features/LinearOperator/Tests/Fixtures"
+            ],
             resources: [
                 .copy("Features/LinearOperator/Tests/Fixtures/repeated_alphabet_sheet.txt")
             ]
