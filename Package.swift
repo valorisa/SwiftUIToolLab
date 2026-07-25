@@ -46,6 +46,9 @@ let package = Package(
             name: "SwiftUIToolLabTests",
             dependencies: ["SwiftUIToolLab"],
             path: ".",
+            exclude: [
+                "Features/LinearOperator/Tests/Fixtures"
+            ],
             sources: [
                 "IntegrationTests",
                 "Features/Base64/Tests",
