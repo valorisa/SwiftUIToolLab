@@ -136,7 +136,7 @@ xcodebuild test -scheme SwiftUIToolLab -destination 'platform=macOS'
 - [x] Phase 10 (v2-C) — Injectable panels (closes v1 debt D5)
 - [x] Phase 11 (v2-D) — Pipeline-service (pure composition in Core/)
 - [x] Phase 12 (v2-E) — LinearOperator demonstrator (rank/condition measurement)
-- [ ] Phase 13 (v2-F) — Reversible linear operator (unimodular matrix, range handling) — next
+- [x] Phase 13 (v2-F) — Reversible linear operator (unimodular matrix, range handling) — next
 
 ## Contributing
 

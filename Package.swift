@@ -23,6 +23,7 @@ let package = Package(
                 "Features/Crypto/Tests",
                 "Features/FileImportExport/Tests",
                 "Features/LinearOperator/Tests",
+                "Features/LinearEncoder/Tests",
                 "Features/Settings/Tests",
                 "README.md",
                 "README.fr.md",
@@ -54,6 +55,7 @@ let package = Package(
                 "Features/Crypto/Tests",
                 "Features/FileImportExport/Tests",
                 "Features/LinearOperator/Tests",
+                "Features/LinearEncoder/Tests",
                 "Features/Settings/Tests"
             ],
             resources: [
