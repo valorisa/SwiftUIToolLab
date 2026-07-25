@@ -13,6 +13,10 @@ A native, local, modular, and testable macOS application built with SwiftUI for 
 transformations**: encoding, decoding, encryption, decryption, and file import/export. Visual
 transformation of images and printed pages is planned for a later stage.
 
+> **Status:** v1 is complete (Phases 0–6). v2 is in progress: localization, security,
+> testability, composition, and a linear-operator demonstrator are done; a reversible
+> linear-operator encoder (v2-F) and image/OCR transformation are next.
+
 ## Key principles
 
 - 100% local processing, no network dependency, no backend, no cloud features.
@@ -28,6 +32,31 @@ transformation of images and printed pages is planned for a later stage.
 - Output preview and clipboard copy.
 - Unit tests covering roundtrip and error scenarios.
 
+## Features (v2 scope)
+
+v2 hardens and extends v1 along five axes. All six phases below are complete and CI-validated.
+
+- **Phase 7 (v2-A) — Localization:** full EN/FR localization of the UI (41 keys), with a robust test
+  enforcing key parity, no empty values, and no FR value identical to EN outside an explicit
+  allow-list. `FileImportExportError` is localized via `LocalizedError`.
+- **Phase 8–9 (v2-B, v2-B-bis) — Security:** complete threat model for real secrets: the password is
+  purged after every operation (success or failure); sensitive payloads update `currentPayload` but
+  are never added to history (undo skips them); sensitive text is purged on tab change via a global,
+  non-cosmetic purge (VMs + reload, not a surface wipe). Base64 is not purged (not a secret by
+  construction).
+- **Phase 10 (v2-C) — Testability:** injectable panels (`OpenPanelProviding` / `SavePanelProviding`,
+  with `OpenPanelWrapper` / `SavePanelWrapper` conformances) make `FileImportExportViewModel`
+  testable end-to-end with mocks. Closes v1 debt D5.
+- **Phase 11 (v2-D) — Composition:** `PipelineService` (in `Core/`) composes a sequence of transform
+  closures via a single `reduce`. No new protocol: it reuses `ReversibleTransformer` /
+  `SecuredTransformer`. 8 tests, including behavioral equivalence with the Phase 6b manual chain.
+- **Phase 12 (v2-E) — LinearOperator demonstrator:** first real use of `ConfigurableTransformer` (13
+  phases after its creation). A `LinearOperator` feature measures a matrix's rank (Gaussian
+  elimination, partial pivoting) and condition number (Frobenius-norm approximation) on a
+  deterministic fixture (provably rank ≤ 2). It *measures*, it does not build a working encoder —
+  that is the next phase. No UI (output is the tests + an in-code origin story that keeps the word
+  "Jacobian" out of every symbol).
+
 ## Architecture
 
 ```text
@@ -37,10 +66,12 @@ SwiftUIToolLab/
 │   ├── Base64/
 │   ├── Crypto/
 │   ├── FileImportExport/
+│   ├── LinearOperator/
 │   └── Settings/
 ├── Core/
 │   ├── Workspace/
 │   ├── Protocols/
+│   ├── Pipeline/
 │   ├── Serialization/
 │   └── Extensions/
 ├── IntegrationTests/
@@ -59,7 +90,7 @@ Three distinct protocols instead of one generic protocol with a configuration di
 | Protocol | Use case | Example |
 |---|---|---|
 | `ReversibleTransformer` | No parameters, strict 1:1 | Base64, ROT13 |
-| `ConfigurableTransformer` | Parameters, no secret | Image resizing |
+| `ConfigurableTransformer` | Parameters, no secret | Image resizing, linear operators (v2-E) |
 | `SecuredTransformer` | Authenticated secret | Encryption, signing |
 
 ### File format
@@ -99,6 +130,13 @@ xcodebuild test -scheme SwiftUIToolLab -destination 'platform=macOS'
 - [x] Phase 4 — Full Crypto implementation with passing tests
 - [x] Phase 5 — Full FileImportExport implementation with passing tests
 - [x] Phase 6 — Cross-feature integration and roundtrip tests
+- [x] Phase 7 (v2-A) — Localization (41 EN/FR keys, robust test, localized errors)
+- [x] Phase 8 (v2-B) — Security: password purge + sensitive payloads excluded from history
+- [x] Phase 9 (v2-B-bis) — Security: sensitive text purge on tab change, global anti-cosmetic purge
+- [x] Phase 10 (v2-C) — Injectable panels (closes v1 debt D5)
+- [x] Phase 11 (v2-D) — Pipeline-service (pure composition in Core/)
+- [x] Phase 12 (v2-E) — LinearOperator demonstrator (rank/condition measurement)
+- [ ] Phase 13 (v2-F) — Reversible linear operator (unimodular matrix, range handling) — next
 
 ## Contributing
 
