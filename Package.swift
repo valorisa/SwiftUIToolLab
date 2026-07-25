@@ -45,6 +45,9 @@ let package = Package(
             name: "SwiftUIToolLabTests",
             dependencies: ["SwiftUIToolLab"],
             path: ".",
+            exclude: [
+                "Features/LinearOperator/Tests/Fixtures"
+            ],
             sources: [
                 "IntegrationTests",
                 "Features/Base64/Tests",
@@ -52,9 +55,6 @@ let package = Package(
                 "Features/FileImportExport/Tests",
                 "Features/LinearOperator/Tests",
                 "Features/Settings/Tests"
-            ],
-            exclude: [
-                "Features/LinearOperator/Tests/Fixtures"
             ],
             resources: [
                 .copy("Features/LinearOperator/Tests/Fixtures/repeated_alphabet_sheet.txt")
