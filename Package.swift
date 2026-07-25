@@ -22,6 +22,7 @@ let package = Package(
                 "Features/Base64/Tests",
                 "Features/Crypto/Tests",
                 "Features/FileImportExport/Tests",
+                "Features/LinearOperator/Tests",
                 "Features/Settings/Tests",
                 "README.md",
                 "README.fr.md",
@@ -49,7 +50,11 @@ let package = Package(
                 "Features/Base64/Tests",
                 "Features/Crypto/Tests",
                 "Features/FileImportExport/Tests",
+                "Features/LinearOperator/Tests",
                 "Features/Settings/Tests"
+            ],
+            resources: [
+                .copy("Features/LinearOperator/Tests/Fixtures/repeated_alphabet_sheet.txt")
             ]
         )
     ]
