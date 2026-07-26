@@ -25,6 +25,7 @@ let package = Package(
                 "Features/LinearOperator/Tests",
                 "Features/LinearEncoder/Tests",
                 "Features/SheetReader/Tests",
+                "Features/ImageTransform/Tests",
                 "Features/Settings/Tests",
                 "README.md",
                 "README.fr.md",
@@ -58,6 +59,7 @@ let package = Package(
                 "Features/LinearOperator/Tests",
                 "Features/LinearEncoder/Tests",
                 "Features/SheetReader/Tests",
+                "Features/ImageTransform/Tests",
                 "Features/Settings/Tests"
             ],
             resources: [
