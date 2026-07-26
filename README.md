@@ -34,7 +34,7 @@ transformation of images and printed pages is planned for a later stage.
 
 ## Features (v2 scope)
 
-v2 hardens and extends v1 along five axes. All six phases below are complete and CI-validated.
+v2 hardens and extends v1 along eight axes. All nine phases below are complete and CI-validated.
 
 - **Phase 7 (v2-A) — Localization:** full EN/FR localization of the UI (41 keys), with a robust test
   enforcing key parity, no empty values, and no FR value identical to EN outside an explicit
@@ -138,6 +138,7 @@ xcodebuild test -scheme SwiftUIToolLab -destination 'platform=macOS'
 - [x] Phase 12 (v2-E) — LinearOperator demonstrator (rank/condition measurement)
 - [x] Phase 13 (v2-F) — Reversible linear operator (unimodular matrix, range handling)
 - [x] Phase 14 (v2-G) — SheetReader: read the real sheet via Vision OCR (closes the Jacobian loop) — done
+- [x] Phase 15 (v2-H) — ImageTransform: reversible image operations (rotate/flip/invert, bit-exact)
 
 ## Contributing
 

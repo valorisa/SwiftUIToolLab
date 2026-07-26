@@ -35,7 +35,7 @@ pour une étape ultérieure.
 
 ## Fonctionnalités (périmètre v2)
 
-La v2 renforce et étend la v1 selon cinq axes. Les six phases ci-dessous sont terminées et validées
+La v2 renforce et étend la v1 selon huit axes. Les neuf phases ci-dessous sont terminées et validées
 par la CI.
 
 - **Phase 7 (v2-A) — Localisation :** localisation complète EN/FR de l'UI (41 clés), avec un test
@@ -145,6 +145,7 @@ xcodebuild test -scheme SwiftUIToolLab -destination 'platform=macOS'
 - [x] Phase 12 (v2-E) — Démonstrateur LinearOperator (mesure rang/conditionnement)
 - [x] Phase 13 (v2-F) — Opérateur linéaire réversible (matrice unimodulaire, gestion de plage)
 - [x] Phase 14 (v2-G) — SheetReader : lire la vraie feuille via Vision OCR (boucle la boucle Jacobienne) — fait
+- [x] Phase 15 (v2-H) — ImageTransform : opérations d'image réversibles (rotation/flip/inversion, bit-exact)
 
 ## Contribuer
 
