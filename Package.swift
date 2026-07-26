@@ -24,6 +24,7 @@ let package = Package(
                 "Features/FileImportExport/Tests",
                 "Features/LinearOperator/Tests",
                 "Features/LinearEncoder/Tests",
+                "Features/SheetReader/Tests",
                 "Features/Settings/Tests",
                 "README.md",
                 "README.fr.md",
@@ -56,6 +57,7 @@ let package = Package(
                 "Features/FileImportExport/Tests",
                 "Features/LinearOperator/Tests",
                 "Features/LinearEncoder/Tests",
+                "Features/SheetReader/Tests",
                 "Features/Settings/Tests"
             ],
             resources: [
