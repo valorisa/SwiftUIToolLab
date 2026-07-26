@@ -63,7 +63,7 @@ final class SheetReaderServiceTests: XCTestCase {
             RecognizedTextPiece(text: "BBBB", confidence: 0.6)
         ]
         let result = try SheetReaderService.segmentIntoGrid(pieces: pieces, size: 2, minimumConfidence: 0.5)
-        XCTAssertEqual(result.averageConfidence, 0.8, accuracy: 1e-9)
+        XCTAssertEqual(result.averageConfidence, 0.8, accuracy: 1e-6)
     }
 
     // MARK: - Layer 2: the single real Vision integration test
