@@ -56,6 +56,27 @@ v2 hardens and extends v1 along eight axes. All nine phases below are complete a
   deterministic fixture (provably rank ≤ 2). It *measures*, it does not build a working encoder —
   that is the next phase. No UI (output is the tests + an in-code origin story that keeps the word
   "Jacobian" out of every symbol).
+- **Phase 13 (v2-F) — LinearEncoder:** the working reversible encoder 🅰️ pointed toward. A
+  `LinearEncoder` feature builds a deterministic unimodular matrix (product of elementary integer
+  row operations, no rejection sampling) and encodes text as x ↦ M·x mod 256 per block, decoding
+  via M⁻¹ = ±adj(M) mod 256 (the adjugate, never a truncated real inverse — det = ±1 makes it
+  exactly integer). Length-prefixed padding (not PKCS#7). Second `ConfigurableTransformer`
+  same-type constraint (`LinearEncoderConfiguration`), coexisting with 🅰️'s in the same
+  compilation unit (SE-0309 polymorphic case, CI-confirmed). No UI.
+- **Phase 14 (v2-G) — SheetReader:** closes the Jacobian loop. Reads the *real* laser-test-sheet
+  photograph automatically via Vision (on-device OCR), re-segmenting the continuous repeating text
+  (the printable alphabet shifted one character per line — exactly the rank-deficient pattern 🅰️
+  modeled) into the square grid `Matrix(asciiGrid:)` expects. Single async point of contact
+  (`SheetReading.readGrid`), structurally isolated (everything downstream stays synchronous). Two
+  test layers: deterministic unit tests + one real-Vision integration test on stable structural
+  properties. The sheet's own matrix is then measured by 🅰️ and honestly tested against 🅱️. No UI.
+- **Phase 15 (v2-H) — ImageTransform:** reversible image operations. A `ConfigurableTransformer`
+  over pixel data (`RawImage`: width/height/channels/pixels, carried inside the existing
+  `Payload.image(Data)` as JSON — no Core change) applying only provably-invertible operations:
+  rotate 90/180/270 (180/270 composed from a single proven rotate90), flip horizontal/vertical, and
+  color inversion (RGB only — alpha explicitly preserved). All roundtrips asserted bit-exact
+  (integer pixel ops, no tolerance). Third `ConfigurableTransformer` same-type constraint
+  (`ImageTransformConfiguration`) — the SE-0309 third tier, CI-confirmed. No UI.
 
 ## Architecture
 

@@ -61,6 +61,30 @@ par la CI.
   norme de Frobenius) sur une fixture déterministe (rang ≤ 2 prouvé). Elle *mesure*, elle ne
   construit pas un encodeur fonctionnel — c'est la phase suivante. Pas d'UI (la sortie = les tests +
   un récit d'origine dans le code qui garde le mot « Jacobienne » hors de tous les symboles).
+- **Phase 13 (v2-F) — LinearEncoder :** l'encodeur réversible fonctionnel vers lequel 🅰️ pointait.
+  Une feature `LinearEncoder` construit une matrice unimodulaire déterministe (produit d'opérations
+  élémentaires sur les lignes, sans rejet aléatoire) et encode le texte par x ↦ M·x mod 256 par
+  bloc, décodant via M⁻¹ = ±adj(M) mod 256 (l'adjugate, jamais un inverse réel tronqué — det = ±1
+  le rend exactement entier). Padding à préfixe de longueur (pas PKCS#7). Deuxième contrainte de
+  même type `ConfigurableTransformer` (`LinearEncoderConfiguration`), coexistant avec celle de 🅰️
+  dans la même unité de compilation (cas polymorphe SE-0309, confirmé en CI). Pas d'UI.
+- **Phase 14 (v2-G) — SheetReader :** boucle la boucle Jacobienne. Lit *automatiquement* la vraie
+  photo de la feuille de test laser via Vision (OCR sur l'appareil), en re-segmentant le texte
+  continu répété (l'alphabet imprimable décalé d'un caractère par ligne — exactement le pattern de
+  rang déficient modélisé par 🅰️) en la grille carrée attendue par `Matrix(asciiGrid:)`. Un seul
+  point de contact asynchrone (`SheetReading.readGrid`), structurellement isolé (tout l'aval reste
+  synchrone). Deux couches de tests : tests unitaires déterministes + un test d'intégration Vision
+  réel sur des propriétés structurelles stables. La matrice de la feuille est ensuite mesurée par
+  🅰️ et testée honnêtement contre 🅱️. Pas d'UI.
+- **Phase 15 (v2-H) — ImageTransform :** opérations d'image réversibles. Un `ConfigurableTransformer`
+  sur des données de pixels (`RawImage` : largeur/hauteur/canaux/pixels, transporté dans le cas
+  `Payload.image(Data)` existant en JSON — pas de modification de Core) appliquant uniquement des
+  opérations prouvées inversibles : rotation 90/180/270 (180/270 composées à partir d'un seul
+  rotate90 prouvé), retournement horizontal/vertical, et inversion des couleurs (RGB uniquement —
+  l'alpha est explicitement préservé). Tous les roundtrips sont assertis bit-exact (opérations
+  entières sur les pixels, sans tolérance). Troisième contrainte de même type
+  `ConfigurableTransformer` (`ImageTransformConfiguration`) — le troisième palier SE-0309, confirmé
+  en CI. Pas d'UI.
 
 ## Architecture
 
