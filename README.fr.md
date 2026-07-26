@@ -144,6 +144,7 @@ xcodebuild test -scheme SwiftUIToolLab -destination 'platform=macOS'
 - [x] Phase 11 (v2-D) — Pipeline-service (composition pure dans Core/)
 - [x] Phase 12 (v2-E) — Démonstrateur LinearOperator (mesure rang/conditionnement)
 - [x] Phase 13 (v2-F) — Opérateur linéaire réversible (matrice unimodulaire, gestion de plage) — à venir
+- [x] Phase 14 (v2-G) — SheetReader : lire la vraie feuille via Vision OCR (boucle la boucle Jacobienne) — fait
 
 ## Contribuer
 
