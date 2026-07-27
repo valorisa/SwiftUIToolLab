@@ -12,7 +12,8 @@
 Une application macOS native, locale, modulaire et testable, construite avec SwiftUI, dédiée aux
 **transformations de données réversibles** : encodage, décodage, chiffrement, déchiffrement, et
 import/export de fichiers. La transformation visuelle d'images et de pages imprimées est prévue
-pour une étape ultérieure.
+pour une étape ultérieure ; ses briques de base (opérations d'image réversibles, entrées/sorties
+de fichiers image réels, et lecture de la feuille laser) sont désormais en place.
 
 > **Statut :** la v1 est terminée (Phases 0–6). La v2 est en cours : localisation, sécurité,
 > testabilité, composition et un démonstrateur d'opérateur linéaire sont faits ; un encodeur
