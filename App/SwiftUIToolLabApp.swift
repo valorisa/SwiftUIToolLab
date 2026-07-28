@@ -14,6 +14,7 @@ struct SwiftUIToolLabApp: App {
         ServiceLocator.shared.register(Base64Servicing.self, instance: Base64Service())
         ServiceLocator.shared.register(CryptoServicing.self, instance: CryptoService())
         ServiceLocator.shared.register(FileImportExportServicing.self, instance: FileImportExportService())
+        ServiceLocator.shared.register(ImageTransformServicing.self, instance: ImageTransformService())
         ServiceLocator.shared.register(Workspace.self, instance: sharedWorkspace)
         // Registered so CryptoViewModel's default-parameter resolution
         // can subscribe to the same AppState instance RootView observes

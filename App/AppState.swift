@@ -17,6 +17,7 @@ enum FeatureIdentifier: String, CaseIterable, Identifiable {
     case base64
     case crypto
     case fileImportExport
+    case imageTransform
     case settings
 
     var id: String { rawValue }

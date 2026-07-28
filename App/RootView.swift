@@ -24,6 +24,10 @@ struct RootView: View {
             FileImportExportView()
                 .tabItem { Label("Files", systemImage: "folder") }
                 .tag(FeatureIdentifier.fileImportExport)
+
+            ImageTransformView()
+                .tabItem { Label("Image", systemImage: "photo") }
+                .tag(FeatureIdentifier.imageTransform)
         }
         // Only fires when selectedFeature actually changes, never at
         // RootView's own initialization — no startup purge. Checks
