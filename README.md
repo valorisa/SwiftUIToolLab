@@ -3,94 +3,145 @@
 ![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-blueviolet)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![CI](https://github.com/valorisa/SwiftUIToolLab/actions/workflows/ci.yml/badge.svg)
-![Status](https://img.shields.io/badge/status-in%20development-yellow)
 
-**Read this in other languages: [Français](README.fr.md)**
+**Read this document in French: [Français](README.fr.md)**
 
 # SwiftUIToolLab
 
-A native, local, modular, and testable macOS application built with SwiftUI for **reversible data
-transformations**: encoding, decoding, encryption, decryption, and file import/export. Visual
-transformation of images and printed pages is planned for a later stage; its building blocks
-(reversible image operations, real image file I/O, and laser-sheet reading) are now in place.
+## What is it?
 
-> **Status:** v1 is complete (Phases 0–6). v2 is in progress: localization, security,
-> testability, composition, and a linear-operator demonstrator are done; a reversible
-> linear-operator encoder (v2-F) and image/OCR transformation are next.
+SwiftUIToolLab is a macOS application that lets you **transform data reversibly**. "Reversible"
+means one simple thing: you can always go back, **without ever losing the original
+information**. Applying a transformation and then its inverse gives back exactly the starting
+data, byte for byte.
 
-## Key principles
+Concretely, the application offers four tabs:
 
-- 100% local processing, no network dependency, no backend, no cloud features.
-- Strict separation between UI, business logic, services, models, and tests.
-- Feature-based (vertical slicing) architecture: each feature is a self-contained module.
-- MVVM, protocol-oriented design, explicit error handling, no logic in views.
+- **Base64** — turn text or a file into plain text, and back;
+- **Crypto** — encrypt text with a password, and decrypt it;
+- **Files** — import and export text or binary files;
+- **Image** — import an image, rotate or flip it, and export it (new).
 
-## Features (v1 scope)
+**Everything happens on your computer.** Nothing is sent over the internet, there is no account
+to create, no remote server. Your data never leaves your machine.
 
-- Base64 encoding/decoding of text.
-- Import/export of text and binary files.
-- Local symmetric encryption with a password (CryptoKit, authenticated).
-- Output preview and clipboard copy.
-- Unit tests covering roundtrip and error scenarios.
+## Why this project?
 
-## Features (v2 scope)
+There are many online tools to encode Base64 or encrypt text. The problem: these tools send your
+data to servers you do not control. For sensitive data, that is a risk.
 
-v2 hardens and extends v1 along eight axes. All nine phases below are complete and CI-validated.
+SwiftUIToolLab makes the opposite choice: **processing is 100% local**. It is the simplest
+possible guarantee for confidentiality — if nothing leaves your computer, nothing can be
+intercepted.
 
-- **Phase 7 (v2-A) — Localization:** full EN/FR localization of the UI (41 keys), with a robust test
-  enforcing key parity, no empty values, and no FR value identical to EN outside an explicit
-  allow-list. `FileImportExportError` is localized via `LocalizedError`.
-- **Phase 8–9 (v2-B, v2-B-bis) — Security:** complete threat model for real secrets: the password is
-  purged after every operation (success or failure); sensitive payloads update `currentPayload` but
-  are never added to history (undo skips them); sensitive text is purged on tab change via a global,
-  non-cosmetic purge (VMs + reload, not a surface wipe). Base64 is not purged (not a secret by
-  construction).
-- **Phase 10 (v2-C) — Testability:** injectable panels (`OpenPanelProviding` / `SavePanelProviding`,
-  with `OpenPanelWrapper` / `SavePanelWrapper` conformances) make `FileImportExportViewModel`
-  testable end-to-end with mocks. Closes v1 debt D5.
-- **Phase 11 (v2-D) — Composition:** `PipelineService` (in `Core/`) composes a sequence of transform
-  closures via a single `reduce`. No new protocol: it reuses `ReversibleTransformer` /
-  `SecuredTransformer`. 8 tests, including behavioral equivalence with the Phase 6b manual chain.
-- **Phase 12 (v2-E) — LinearOperator demonstrator:** first real use of `ConfigurableTransformer` (13
-  phases after its creation). A `LinearOperator` feature measures a matrix's rank (Gaussian
-  elimination, partial pivoting) and condition number (Frobenius-norm approximation) on a
-  deterministic fixture (provably rank ≤ 2). It *measures*, it does not build a working encoder —
-  that is the next phase. No UI (output is the tests + an in-code origin story that keeps the word
-  "Jacobian" out of every symbol).
-- **Phase 13 (v2-F) — LinearEncoder:** the working reversible encoder 🅰️ pointed toward. A
-  `LinearEncoder` feature builds a deterministic unimodular matrix (product of elementary integer
-  row operations, no rejection sampling) and encodes text as x ↦ M·x mod 256 per block, decoding
-  via M⁻¹ = ±adj(M) mod 256 (the adjugate, never a truncated real inverse — det = ±1 makes it
-  exactly integer). Length-prefixed padding (not PKCS#7). Second `ConfigurableTransformer`
-  same-type constraint (`LinearEncoderConfiguration`), coexisting with 🅰️'s in the same
-  compilation unit (SE-0309 polymorphic case, CI-confirmed). No UI.
-- **Phase 14 (v2-G) — SheetReader:** closes the Jacobian loop. Reads the *real* laser-test-sheet
-  photograph automatically via Vision (on-device OCR), re-segmenting the continuous repeating text
-  (the printable alphabet shifted one character per line — exactly the rank-deficient pattern 🅰️
-  modeled) into the square grid `Matrix(asciiGrid:)` expects. Single async point of contact
-  (`SheetReading.readGrid`), structurally isolated (everything downstream stays synchronous). Two
-  test layers: deterministic unit tests + one real-Vision integration test on stable structural
-  properties. The sheet's own matrix is then measured by 🅰️ and honestly tested against 🅱️. No UI.
-- **Phase 15 (v2-H) — ImageTransform:** reversible image operations. A `ConfigurableTransformer`
-  over pixel data (`RawImage`: width/height/channels/pixels, carried inside the existing
-  `Payload.image(Data)` as JSON — no Core change) applying only provably-invertible operations:
-  rotate 90/180/270 (180/270 composed from a single proven rotate90), flip horizontal/vertical, and
-  color inversion (RGB only — alpha explicitly preserved). All roundtrips asserted bit-exact
-  (integer pixel ops, no tolerance). Third `ConfigurableTransformer` same-type constraint
-  (`ImageTransformConfiguration`) — the SE-0309 third tier, CI-confirmed. No UI.
+It is also, openly, a **learning project**: it explores how to build a macOS application that is
+modular (each feature is an independent module), testable (each module is covered by automated
+tests), and safe (secrets such as passwords are wiped from memory as soon as they are no longer
+needed).
 
-## Architecture
+## What can the application do?
+
+Here is a concrete use case for each tab.
+
+### Base64
+
+Base64 is a way to write any data (text, image, PDF…) as plain text, using only letters,
+digits, and two symbols (`+` and `/`).
+
+**Use case:** you want to paste a small binary file into an email or a form field that only
+accepts text. You encode it to Base64 (it becomes text), paste it, and the recipient decodes it
+to recover the **exactly identical** file.
+
+### Crypto
+
+The Crypto tab encrypts text with a password (authenticated symmetric encryption, via Apple's
+CryptoKit library). Without the password, the encrypted text is unreadable.
+
+**Use case:** you want to keep a confidential note. You encrypt it with a password and store the
+encrypted result. To read it again, you decrypt it with the same password.
+
+**Important security detail:** the password is **wiped from memory** after every operation
+(whether it succeeds or fails). Sensitive texts are never kept in the application's history, and
+are purged when you switch tabs.
+
+### Files
+
+The Files tab handles importing and exporting files (text or binary).
+
+**Use case:** you import a file, apply a transformation to it, then export the result. Every
+export produces a single `.cryptolab` (or `.clab`) file bundling the data, the encryption
+header, and the metadata — you never have to manage a key, IV, or metadata separately.
+
+### Image (new)
+
+The Image tab applies **reversible** transformations to real images.
+
+**Use case:** you import a photo (PNG or JPEG), apply an operation (rotate 90°/180°/270°,
+flip horizontal or vertical, invert colors), then export the result as PNG. Since the
+transformation is reversible, applying the inverse operation would give back the original
+image, **byte for byte**.
+
+The export is **always PNG**: even if you type a filename ending in `.jpg`, the code
+automatically renames it to `.png`. This is a guarantee **by construction** (the code only ever
+produces PNG), not just a checkbox.
+
+> Two features were deliberately left out of this first version of the Image tab: the **visual
+> preview** of the image (before/after) and the **chaining** of several transformations. They
+> may come later, each as a separate piece of work.
+
+## Reversible transformations, the heart of the project
+
+The whole application revolves around one idea: transformations that can be **undone exactly**.
+An analogy: turning a steering wheel 90° right, then 90° left, brings you back exactly to the
+starting position. That is what each transformation in the application does, but on data.
+
+To organize these transformations, the code distinguishes three families (three "protocols", in
+Swift jargon), according to the nature of the operation:
+
+| Family | In one sentence | Analogy | Examples |
+|---|---|---|---|
+| `ReversibleTransformer` | No settings, 1:1 reversible | A door | Base64 |
+| `ConfigurableTransformer` | With settings, no secret | An adjustable oven | Image, linear operators |
+| `SecuredTransformer` | With authenticated secret | A safe | Encryption |
+
+This separation is not cosmetic: it lets the code (and the tests) handle each family by its own
+rules — for example, never storing a secret for the third family.
+
+## How is the application built?
+
+This section is for the curious and for developers.
+
+The application follows a **feature-based** architecture: each tab is a self-contained module,
+stored in its own folder under `Features/`. Modules only talk to each other through
+**protocols** (interface contracts) defined in a shared folder `Core/Protocols/`. Result: you
+can modify or test one module without touching the others.
+
+Each tab follows the **MVVM** pattern:
+
+- the **View** (the "face") displays the interface and does **no computation**;
+- the **ViewModel** (the "brain") does the work and gives the View what it should display;
+- the **Model** (the "data"): the data structures (such as `Payload`, `Matrix`, or `RawImage`)
+  that the ViewModel manipulates.
+
+A **ServiceLocator** acts as a central directory: it knows which concrete implementation to use
+for each service type. Analogy: a telephone switchboard that connects you to the right
+department, without you needing to know its direct number.
+
+### Project tree
 
 ```text
 SwiftUIToolLab/
-├── App/
-├── Features/
+├── App/                        (application entry point)
+├── Features/                   (one subfolder per tab)
 │   ├── Base64/
 │   ├── Crypto/
 │   ├── FileImportExport/
+│   ├── ImageTransform/         (Image tab — new)
+│   ├── LinearEncoder/
 │   ├── LinearOperator/
+│   ├── SheetReader/
 │   └── Settings/
-├── Core/
+├── Core/                       (shared across features)
 │   ├── Workspace/
 │   ├── Protocols/
 │   ├── Pipeline/
@@ -98,35 +149,61 @@ SwiftUIToolLab/
 │   └── Extensions/
 ├── IntegrationTests/
 ├── Resources/
+├── docs/                       (decision notes, including option-y-reopening.md)
 └── README.md
 ```
 
-Each feature only communicates with others through protocols defined in `Core/Protocols/`. The
-`Workspace` is a pure data container: it never implements business logic (no `encrypt()`, no
-`base64Encode()`).
+## The Image tab and the input/output bridge
 
-### The transformer trinity
+The Image tab relies on two recently added building blocks:
 
-Three distinct protocols instead of one generic protocol with a configuration dictionary:
+1. **Reversible image operations** (`ImageTransformService`): rotation, flip, color inversion,
+   all proven invertible and tested **byte for byte**.
+2. **The input/output bridge** (`ImageIOBridge`): it reads a real image file (PNG or JPEG) and
+   writes a real PNG file. Before it, image transformations only worked on images fabricated in
+   memory inside tests — no real image could enter or leave.
 
-| Protocol | Use case | Example |
-|---|---|---|
-| `ReversibleTransformer` | No parameters, strict 1:1 | Base64, ROT13 |
-| `ConfigurableTransformer` | Parameters, no secret | Image resizing, linear operators (v2-E) |
-| `SecuredTransformer` | Authenticated secret | Encryption, signing |
+For a long time, the project's "computation" features had **no graphical interface**: the logic
+was validated first (by tests), and the interface was deferred. This was a method rule nicknamed
+**"Option Y"** ("a computation workstream does not mix in a UI decision"). The Image tab marks
+the **reopening** of that rule: with the logic and the I/O bridge validated, the interface
+became possible.
 
-### File format
+> For the detail of this decision (why the rule existed, why it was reopened, the choices made,
+> the precautions taken), see the dedicated note:
+> [`docs/option-y-reopening.md`](docs/option-y-reopening.md) (in French).
 
-Every export produces a single versioned `.cryptolab` (or `.clab`) file bundling the payload,
-encryption header, and metadata. Users never manage keys, IVs, or metadata separately.
+## The project history, step by step
 
-## Requirements
+The project was built in successive layers, each adding a level of maturity.
 
-- macOS 14+
-- Xcode 15+
-- Swift 5.9+
+**v1 — the foundations.** Setting up the structure, the first three tabs (Base64, Crypto,
+Files), and automated tests (including "roundtrip" tests: encoding then decoding must give back
+exactly the original data).
 
-## Getting started
+**v2 — the hardening.** v2 hardened and extended v1 along **several axes**, grouped below into
+five themes (the last one alone gathers four features):
+
+- full **localization** of the interface in French and English;
+- **security**: systematic wiping of passwords and sensitive texts from memory;
+- **testability**: the file open/save panels can be replaced by mocks in tests;
+- **composition**: a service that chains several transformations in sequence;
+- a family of **configurable transformers**, declined into four features: a linear-algebra
+  demonstrator (measuring a matrix's rank), a reversible linear encoder, a sheet reader using
+  optical character recognition (OCR), and image operations.
+
+Each step was validated by **continuous integration** (CI): on every change, the project is
+recompiled and all tests are rerun automatically.
+
+## For developers
+
+### Requirements
+
+- macOS 14 or later;
+- Xcode 15 or later;
+- Swift 5.9 or later.
+
+### Getting started
 
 ```bash
 git clone https://github.com/valorisa/SwiftUIToolLab.git
@@ -134,38 +211,42 @@ cd SwiftUIToolLab
 open SwiftUIToolLab.xcodeproj
 ```
 
-## Testing
-
-Each feature follows a strict protocol → test → implementation sequence, with three levels of
-coverage: mocked business logic, corrupted-file robustness, and native macOS alert UI.
+### Running the tests
 
 ```bash
 xcodebuild test -scheme SwiftUIToolLab -destination 'platform=macOS'
 ```
 
+Each feature follows a strict sequence: **protocol → test → implementation**. First the contract
+(protocol), then the tests, then the code that makes the tests pass.
+
+### Contributing
+
+Contributions follow the **Conventional Commits** convention and a `main` / `dev` / `backup`
+branch strategy. Pull requests are **squash-merged** (all commits of a branch are grouped into
+one), and the source branch is deleted after merge.
+
 ## Roadmap
 
-- [x] Phase 0 — Folder structure and empty files with `// MARK: - TODO`
-- [x] Phase 1 — Core/Workspace, models, and protocols (compiles)
-- [x] Phase 2 — ServiceLocator, dependency injection, one minimal feature (compiles and renders)
-- [x] Phase 3 — Full Base64 implementation with passing tests
-- [x] Phase 4 — Full Crypto implementation with passing tests
-- [x] Phase 5 — Full FileImportExport implementation with passing tests
-- [x] Phase 6 — Cross-feature integration and roundtrip tests
-- [x] Phase 7 (v2-A) — Localization (41 EN/FR keys, robust test, localized errors)
-- [x] Phase 8 (v2-B) — Security: password purge + sensitive payloads excluded from history
-- [x] Phase 9 (v2-B-bis) — Security: sensitive text purge on tab change, global anti-cosmetic purge
-- [x] Phase 10 (v2-C) — Injectable panels (closes v1 debt D5)
-- [x] Phase 11 (v2-D) — Pipeline-service (pure composition in Core/)
-- [x] Phase 12 (v2-E) — LinearOperator demonstrator (rank/condition measurement)
-- [x] Phase 13 (v2-F) — Reversible linear operator (unimodular matrix, range handling)
-- [x] Phase 14 (v2-G) — SheetReader: read the real sheet via Vision OCR (closes the Jacobian loop)
-- [x] Phase 15 (v2-H) — ImageTransform: reversible image operations (rotate/flip/invert, bit-exact)
+The following steps are **complete** and CI-validated:
 
-## Contributing
+- [x] Phases 0–6 (v1) — structure, Base64, Crypto, Files, integration and roundtrip tests
+- [x] Phase 7 (v2-A) — French/English localization (41 keys)
+- [x] Phases 8–9 (v2-B, v2-B-bis) — security (secret wiping)
+- [x] Phase 10 (v2-C) — injectable file panels (testability)
+- [x] Phase 11 (v2-D) — composition service (chaining transformations)
+- [x] Phase 12 (v2-E) — linear-operator demonstrator (rank/condition measurement)
+- [x] Phase 13 (v2-F) — reversible linear encoder (unimodular matrix)
+- [x] Phase 14 (v2-G) — laser-sheet reader via OCR (Vision)
+- [x] Phase 15 (v2-H) — reversible image operations (rotate/flip/invert, byte-exact)
+- [x] Image I/O bridge (PR #16) — read/write real image files (JPEG in, PNG out)
+- [x] Image tab (PR #17) — graphical interface for image transformations
+- [x] Option Y decision note (PR #18) — documentation of the rule reopening
 
-Contributions follow Conventional Commits and a `main` / `dev` / `backup` branch strategy. Pull
-requests are squash-merged and the source branch is deleted after merge.
+**Envisioned ideas** (not planned):
+
+- [ ] Visual preview of the image (before/after) in the Image tab
+- [ ] Chaining of several image transformations
 
 ## License
 
